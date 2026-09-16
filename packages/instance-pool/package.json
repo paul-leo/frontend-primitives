@@ -29,6 +29,11 @@
   "publishConfig": {
     "access": "public"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/paul-leo/frontend-primitives.git",
+    "directory": "packages/instance-pool"
+  },
   "keywords": [
     "pool",
     "instance-pool",

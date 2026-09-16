@@ -29,6 +29,11 @@
   "publishConfig": {
     "access": "public"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/paul-leo/frontend-primitives.git",
+    "directory": "packages/scope-manager"
+  },
   "keywords": [
     "registry",
     "scope",

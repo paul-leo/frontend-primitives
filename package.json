@@ -4,6 +4,10 @@
   "private": true,
   "description": "Small, standalone TypeScript primitives for scoped resource lifecycles, instance pooling, and atomic multi-resource rollouts",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/paul-leo/frontend-primitives.git"
+  },
   "packageManager": "pnpm@9.15.0",
   "scripts": {
     "build": "turbo build",
