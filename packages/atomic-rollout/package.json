@@ -1,0 +1,47 @@
+{
+  "name": "atomic-rollout",
+  "version": "0.1.0",
+  "description": "A loader-agnostic check->warm->verify->promote->commit protocol for atomically rolling out a new version of a set of related resources (a remote micro-frontend entry, a Module Federation container, a native app update bundle) — so consumers never end up running a mix of old and new resources. Works alongside qiankun, Module Federation, wujie, a Service Worker, or a bare fetch; it does not replace any of them.",
+  "license": "MIT",
+  "type": "commonjs",
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "types": "dist/cjs/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/cjs/index.d.ts",
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js",
+      "default": "./dist/cjs/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.cjs.json && tsc -p tsconfig.esm.json && node ../../scripts/write-dual-pkg.mjs dist",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [
+    "rollout",
+    "micro-frontend",
+    "module-federation",
+    "atomic-update",
+    "cache-invalidation",
+    "prefetch"
+  ],
+  "dependencies": {
+    "scope-manager": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.8"
+  }
+}

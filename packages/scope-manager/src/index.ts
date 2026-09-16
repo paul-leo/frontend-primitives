@@ -1,0 +1,6 @@
+export type { ScopeId } from './scope-id'
+export { ScopeManager, type ScopeManagerOptions } from './registry'
+export { LruScopeManager, type LruScopeManagerOptions } from './lru-registry'
+export { createOccupancyGate, type OccupancyGate } from './occupancy-gate'
+export { createRefreshGuard, type RefreshGuard } from './refresh-guard'
+export { buildScopedKey } from './scoped-key'

@@ -1,0 +1,47 @@
+{
+  "name": "instance-pool",
+  "version": "0.1.0",
+  "description": "A controlled pool for non-component resources (iframes, workers, independent JS runtimes, connections) that need to be pre-warmed idle, claimed by a session, and cooled down for reuse instead of torn down immediately. If you only need to pool framework components, use Vue's <KeepAlive> or react-activation instead — this package is for resources those tools cannot manage.",
+  "license": "MIT",
+  "type": "commonjs",
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "types": "dist/cjs/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/cjs/index.d.ts",
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js",
+      "default": "./dist/cjs/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.cjs.json && tsc -p tsconfig.esm.json && node ../../scripts/write-dual-pkg.mjs dist",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "keywords": [
+    "pool",
+    "instance-pool",
+    "iframe",
+    "worker",
+    "micro-frontend",
+    "prewarm"
+  ],
+  "dependencies": {
+    "scope-manager": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.8"
+  }
+}
