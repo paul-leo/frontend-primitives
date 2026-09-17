@@ -54,39 +54,38 @@ loop into an infinite spin instead of a clean re-login.
 
 ## Principle 2 & 3: an advisory lock, with a signal for "did I just wait on someone"
 
+`createWebLocksLock()` and `createNoopLock()` now ship in [`scope-manager`](../../packages/scope-manager)
+rather than being copy-pasted per project — this specific piece turned out to be fully
+self-contained (no project-specific wiring needed, just `lock.run(name, fn)`), unlike the rest of
+this recipe:
+
 ```ts
-export interface LockRunInfo {
-  contended: boolean // did this run have to wait for another context's lock, vs. acquire immediately?
-}
+import { createWebLocksLock, createNoopLock, type LockRunInfo } from 'scope-manager'
 
-export interface SharedLock {
-  run<R>(name: string, fn: (info: LockRunInfo) => Promise<R>): Promise<R>
-}
+const lock = createWebLocksLock() // falls back to createNoopLock() manually if navigator.locks is unavailable
 
-export function createWebLocksLock(): SharedLock {
-  return {
-    async run(name, fn) {
-      // Two-phase probe: try non-blocking first. The browser guarantees this probe itself
-      // is race-free, so it reliably distinguishes "acquired immediately" from "had to wait".
-      const gotImmediately = await new Promise<boolean>((resolve) => {
-        navigator.locks.request(name, { ifAvailable: true }, (lock) => resolve(lock !== null))
-      })
-      if (gotImmediately) {
-        return navigator.locks.request(name, () => fn({ contended: false }))
-      }
-      return navigator.locks.request(name, () => fn({ contended: true }))
-    },
+await lock.run('refresh-token', async (info: LockRunInfo) => {
+  if (info.contended) {
+    // We waited on another tab's lock — it very likely already did this work. Re-read
+    // the shared store (see ReloadableSharedValue below) instead of redoing it blindly.
   }
-}
-
-export function createNoopLock(): SharedLock {
-  return { run: (_name, fn) => fn({ contended: false }) }
-}
+  // ...do the actual refresh...
+})
 ```
 
 `contended` is a more reliable "did someone else probably already do this" signal than
 re-checking whether the shared state merely "looks" fresh — staleness can also come from clock
-skew or a partial write, whereas "I just waited on someone else's lock" is a direct fact.
+skew or a partial write, whereas "I just waited on someone else's lock" is a direct fact. The
+implementation uses a two-phase probe (`{ ifAvailable: true }` first) and runs the caller's work
+*inside* that same probe callback when it succeeds, rather than releasing and re-requesting — this
+closes a race window that a naive two-request implementation would otherwise reopen.
+
+This is also the one piece of this recipe with a concrete, citable reason to prefer the native API
+over the most popular userland alternative: [`browser-tabs-lock`](https://github.com/supertokens/browser-tabs-lock)
+(the most-used tab-mutex package, predating `navigator.locks`) has had a real mutual-exclusion
+bug where a second requester could break the lock. `navigator.locks` is implemented by the browser
+itself and doesn't carry that class of bug.
+
 `createNoopLock()` is the graceful degradation path for environments where `navigator.locks` isn't
 available (older browsers, single-process apps) — falling back to never blocking, not throwing.
 
