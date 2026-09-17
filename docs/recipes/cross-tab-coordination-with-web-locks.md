@@ -1,5 +1,14 @@
 # Cross-tab coordination with the Web Locks API + BroadcastChannel
 
+> This is a different axis from [`scope-context`](../../packages/scope-context): that package
+> isolates *different* scopes (org A's cache from org B's), while this recipe coordinates
+> multiple contexts that legitimately share the *same* scope (two tabs both open on org A).
+> `scope-context`'s default `comms` adapter is intentionally not fail-closed for this reason —
+> see its `default-comms-adapter.ts` for why. If you're pooling/reusing a resource across
+> sessions (see [`instance-pool`](../../packages/instance-pool)), the fail-closed sender
+> attribution pattern below is implemented as real code in
+> [`scope-context-penpal`](../../packages/scope-context-penpal).
+
 Any system with multiple independent execution contexts (browser tabs, Electron
 `BrowserWindow`s, and eventually independent processes) sharing one piece of state — a login
 credential, a config value, collaborative metadata — runs into two coupled but distinct problems:

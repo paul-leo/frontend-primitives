@@ -7,7 +7,13 @@
     [
       "scope-manager",
       "instance-pool",
-      "atomic-rollout"
+      "atomic-rollout",
+      "scope-context",
+      "scope-context-tanstack-query",
+      "scope-context-dexie",
+      "scope-context-penpal",
+      "scope-context-react",
+      "scope-context-vue"
     ]
   ],
   "access": "public",

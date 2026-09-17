@@ -1,5 +1,12 @@
 # Caching with TanStack Query
 
+> Need this isolated across storage, cache, requests, and comms *together*, as a structural
+> guarantee rather than a convention applied at each call site? See
+> [`scope-context`](../../packages/scope-context) and its
+> [`scope-context-tanstack-query`](../../packages/scope-context-tanstack-query) adapter, which
+> wraps this same recommendation — one independent `QueryClient` per scope instead of a shared
+> client with prefixed keys.
+
 Don't build a cache engine. Deduplication, stale-while-revalidate / cache-first / network-first
 policies, and layered invalidation by key prefix are all solved problems — [TanStack
 Query](https://tanstack.com/query) (or SWR) already does them well, and re-implementing a cache

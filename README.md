@@ -17,9 +17,23 @@ application of that idea.
 | [`scope-manager`](./packages/scope-manager) | Lazily create/reuse/tear down one value per scope, with an optional LRU capacity bound, plus two small mutex/versioning primitives | You only ever have one instance of the thing you're managing |
 | [`instance-pool`](./packages/instance-pool) | Pool non-component resources (iframes, workers, independent JS runtimes, connections) with pre-warm/claim/cooldown lifecycle | You're pooling plain framework components — use Vue's `<KeepAlive>` or `react-activation` instead |
 | [`atomic-rollout`](./packages/atomic-rollout) | A loader-agnostic check→warm→verify→promote protocol so a host never ends up running a mix of old and new versions of a set of related remote resources | Your resources are content-addressed *and* your loader already refuses to mix versions across a deploy — most don't |
+| [`scope-context`](./packages/scope-context) | A bundle of storage/cache/request/comms/theme adapters created once per scope, so "this scope's requests can only ever land in this scope's cache" is true by construction, not a convention | You only need one axis in isolation — reach for the matching recipe below instead |
 
-`instance-pool` and `atomic-rollout` both depend on `scope-manager`; it is not sold as a
-standalone solution to anything by itself.
+`instance-pool`, `atomic-rollout`, and `scope-context` all depend on `scope-manager`; it is not
+sold as a standalone solution to anything by itself.
+
+### `scope-context` integration packages
+
+| Package | Adapter for |
+|---|---|
+| [`scope-context-tanstack-query`](./packages/scope-context-tanstack-query) | Cache — one `QueryClient` per scope |
+| [`scope-context-dexie`](./packages/scope-context-dexie) | Storage — one IndexedDB database per scope |
+| [`scope-context-penpal`](./packages/scope-context-penpal) | Comms — fail-closed sender attribution over any two-way RPC transport |
+| [`scope-context-react`](./packages/scope-context-react) | `<ScopeProvider>` + `useScope()` for React |
+| [`scope-context-vue`](./packages/scope-context-vue) | `provideScope()`/`<ScopeProvider>` + `useScope()` for Vue |
+
+Each integration package is independent — pull in only the adapters you actually use.
+`scope-context-react`/`-vue` know nothing about TanStack Query, Dexie, or Penpal.
 
 Four more directions were investigated, found already well-solved by existing tools, and written
 up as recipes instead of shipped as packages — see [`docs/recipes/`](./docs/recipes) below.
@@ -45,6 +59,7 @@ applications of this one registry, not separate primitives.
 pnpm add scope-manager
 pnpm add instance-pool    # depends on scope-manager
 pnpm add atomic-rollout   # depends on scope-manager
+pnpm add scope-context scope-context-react   # or -vue; add tanstack-query/dexie/penpal adapters as needed
 ```
 
 ```ts
@@ -56,6 +71,17 @@ const perTenantState = new ScopeManager({
 })
 
 perTenantState.getOrCreate('tenant-42') // created once, reused after
+```
+
+```tsx
+import { createScopeContext } from 'scope-context'
+import { ScopeProvider, useScopedRequest } from 'scope-context-react'
+
+const orgA = createScopeContext('org-a')
+const orgB = createScopeContext('org-b')
+
+// <ScopeProvider value={orgA}><OrgPanel /></ScopeProvider>   — left pane
+// <ScopeProvider value={orgB}><OrgPanel /></ScopeProvider>   — right pane, fully isolated
 ```
 
 ## Docs

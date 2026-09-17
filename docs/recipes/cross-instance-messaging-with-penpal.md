@@ -1,5 +1,11 @@
 # Cross-instance messaging with Penpal / PostRobot / BroadcastChannel
 
+> Need this isolated across storage, cache, requests, and comms *together*, as a structural
+> guarantee rather than a convention applied at each call site? See
+> [`scope-context`](../../packages/scope-context) and its
+> [`scope-context-penpal`](../../packages/scope-context-penpal) adapter, which implements the
+> `FilteredChannel` fail-closed pattern described below as real, tested code.
+
 There are two different messaging problems that get conflated under "cross-instance
 communication," and they call for different tools.
 

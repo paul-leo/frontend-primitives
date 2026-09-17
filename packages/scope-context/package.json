@@ -1,0 +1,52 @@
+{
+  "name": "scope-context",
+  "version": "0.1.0",
+  "description": "A scope-bound bundle of storage, cache, request, comms, and theme adapters — created once per scope (tenant/org/session), so cross-scope leakage is structurally impossible rather than a naming convention. Every axis is optional and pluggable; zero-dep defaults (in-memory cache/storage, fetch, BroadcastChannel, CSS custom properties) work out of the box.",
+  "license": "MIT",
+  "type": "commonjs",
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "types": "dist/cjs/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/cjs/index.d.ts",
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js",
+      "default": "./dist/cjs/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.cjs.json && tsc -p tsconfig.esm.json && node ../../scripts/write-dual-pkg.mjs dist",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/paul-leo/frontend-primitives.git",
+    "directory": "packages/scope-context"
+  },
+  "keywords": [
+    "scope",
+    "multi-tenant",
+    "storage",
+    "cache",
+    "request",
+    "theme"
+  ],
+  "dependencies": {
+    "scope-manager": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.8"
+  }
+}

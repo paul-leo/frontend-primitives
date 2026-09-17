@@ -1,5 +1,11 @@
 # Persistent storage with Dexie.js
 
+> Need this isolated across storage, cache, requests, and comms *together*, as a structural
+> guarantee rather than a convention applied at each call site? See
+> [`scope-context`](../../packages/scope-context) and its
+> [`scope-context-dexie`](../../packages/scope-context-dexie) adapter, which wraps this exact
+> recommendation (including the `on('blocked')`/`on('versionchange')` handling below).
+
 Don't hand-roll an IndexedDB wrapper. [Dexie.js](https://dexie.org/) already handles the sharp
 edges of the raw API, including the two failure modes below that are easy to get wrong from
 scratch.
