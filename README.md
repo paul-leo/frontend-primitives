@@ -86,6 +86,9 @@ const orgB = createScopeContext('org-b')
 
 ## Docs
 
+- [`ARCHITECTURE.md`](./ARCHITECTURE.md) — the design rationale that sits above all of these
+  packages: the problem class, the structural-guarantee thesis, build-vs-buy research, and what
+  was deliberately left out.
 - [`docs/recipes/`](./docs/recipes) — where an existing library already solves most of the
   problem, and only a thin adapter layer is needed on top: caching, cross-instance messaging,
   persistent storage, cross-tab coordination.
