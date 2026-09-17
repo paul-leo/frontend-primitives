@@ -26,10 +26,5 @@ perTenant.getOrCreate('tenant-42') // created once, reused after
 - `createOccupancyGate()` — synchronous claim/release/isClaimed mutex, self-exclusion aware
 - `createRefreshGuard()` — monotonic sequence counter for discarding stale async responses
 - `buildScopedKey(scope, ...parts)` — deterministic scope-first key builder
-- `createWebLocksLock()` / `createNoopLock()` — best-effort cross-tab lock on top of the native
-  Web Locks API, with a race-free two-phase probe exposing whether a run had to wait on another
-  context's lock (`{ contended: boolean }`). See
-  [`docs/recipes/cross-tab-coordination-with-web-locks.md`](../../docs/recipes/cross-tab-coordination-with-web-locks.md)
-  for how this composes into a full cross-tab coordination setup.
 
 MIT licensed.

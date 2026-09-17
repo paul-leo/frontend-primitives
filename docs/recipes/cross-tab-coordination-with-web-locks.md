@@ -54,40 +54,52 @@ loop into an infinite spin instead of a clean re-login.
 
 ## Principle 2 & 3: an advisory lock, with a signal for "did I just wait on someone"
 
-`createWebLocksLock()` and `createNoopLock()` now ship in [`scope-manager`](../../packages/scope-manager)
-rather than being copy-pasted per project — this specific piece turned out to be fully
-self-contained (no project-specific wiring needed, just `lock.run(name, fn)`), unlike the rest of
-this recipe:
-
 ```ts
-import { createWebLocksLock, createNoopLock, type LockRunInfo } from 'scope-manager'
+export interface LockRunInfo {
+  contended: boolean // did this run have to wait for another context's lock, vs. acquire immediately?
+}
 
-const lock = createWebLocksLock() // falls back to createNoopLock() manually if navigator.locks is unavailable
+export interface SharedLock {
+  run<R>(name: string, fn: (info: LockRunInfo) => Promise<R>): Promise<R>
+}
 
-await lock.run('refresh-token', async (info: LockRunInfo) => {
-  if (info.contended) {
-    // We waited on another tab's lock — it very likely already did this work. Re-read
-    // the shared store (see ReloadableSharedValue below) instead of redoing it blindly.
+export function createWebLocksLock(): SharedLock {
+  return {
+    async run(name, fn) {
+      // Two-phase probe: try non-blocking first. The browser guarantees this probe itself
+      // is race-free, so it reliably distinguishes "acquired immediately" from "had to wait".
+      // Run the caller's work *inside* the successful probe callback (don't release and
+      // re-request) — that's what keeps this race-free.
+      return new Promise<R>((resolve, reject) => {
+        navigator.locks.request(name, { ifAvailable: true }, async (lock) => {
+          if (lock !== null) {
+            return resolve(await fn({ contended: false }))
+          }
+          return resolve(await navigator.locks.request(name, () => fn({ contended: true })))
+        }).catch(reject)
+      })
+    },
   }
-  // ...do the actual refresh...
-})
+}
+
+export function createNoopLock(): SharedLock {
+  return { run: (_name, fn) => fn({ contended: false }) }
+}
 ```
 
 `contended` is a more reliable "did someone else probably already do this" signal than
 re-checking whether the shared state merely "looks" fresh — staleness can also come from clock
-skew or a partial write, whereas "I just waited on someone else's lock" is a direct fact. The
-implementation uses a two-phase probe (`{ ifAvailable: true }` first) and runs the caller's work
-*inside* that same probe callback when it succeeds, rather than releasing and re-requesting — this
-closes a race window that a naive two-request implementation would otherwise reopen.
+skew or a partial write, whereas "I just waited on someone else's lock" is a direct fact.
+`createNoopLock()` is the graceful degradation path for environments where `navigator.locks` isn't
+available (older browsers, single-process apps) — falling back to never blocking, not throwing.
 
 This is also the one piece of this recipe with a concrete, citable reason to prefer the native API
 over the most popular userland alternative: [`browser-tabs-lock`](https://github.com/supertokens/browser-tabs-lock)
-(the most-used tab-mutex package, predating `navigator.locks`) has had a real mutual-exclusion
-bug where a second requester could break the lock. `navigator.locks` is implemented by the browser
-itself and doesn't carry that class of bug.
-
-`createNoopLock()` is the graceful degradation path for environments where `navigator.locks` isn't
-available (older browsers, single-process apps) — falling back to never blocking, not throwing.
+(the most-used tab-mutex package, predating `navigator.locks`) has had a real mutual-exclusion bug
+where a second requester could break the lock. `navigator.locks` is implemented by the browser
+itself and doesn't carry that class of bug — which is exactly why this stays a copy-pasteable
+recipe rather than a dependency: it's small enough to read and verify at the call site, and pinning
+it to a package version would just add an update to track for ~15 lines of code.
 
 ## Principle 4: bridge a lock across two separate lifecycle callbacks
 
